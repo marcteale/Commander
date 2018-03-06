@@ -88,12 +88,3 @@ class SharedFolder:
 
     def to_lowerstring(self):
         return self.to_string().lower()
-
-
-    def to_string(self):
-        target = self.shared_folder_uid + str(self.users) + str(self.teams)
-        return target
-
-    def to_lowerstring(self):
-        return self.to_string().lower()
-
