@@ -9,25 +9,27 @@
 # Contact: ops@keepersecurity.com
 #
 
-import sys
-import json
-import requests
-import base64
-import re
 import getpass
+import json
+import sys
 import time
+
+import base64
 import os
-from keepercommander import generator
-from keepercommander import plugin_manager, params
-from keepercommander.record import Record
-from keepercommander.shared_folder import SharedFolder
-from keepercommander.team import Team
-from keepercommander.error import AuthenticationError, CommunicationError, CryptoError
+import re
+import requests
 from Cryptodome import Random
+from Cryptodome.Cipher import AES, PKCS1_v1_5
 from Cryptodome.Hash import SHA256, HMAC, SHA
 from Cryptodome.Protocol.KDF import PBKDF2
 from Cryptodome.PublicKey import RSA
-from Cryptodome.Cipher import AES, PKCS1_v1_5
+
+from keepercommander import generator
+from keepercommander import plugin_manager, params
+from keepercommander.error import AuthenticationError, CommunicationError, CryptoError
+from keepercommander.record import Record
+from keepercommander.shared_folder import SharedFolder
+from keepercommander.team import Team
 
 # Client version match required for server calls
 CLIENT_VERSION = 'c10.1.0'
