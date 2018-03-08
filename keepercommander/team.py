@@ -1,10 +1,10 @@
-#  _  __  
+#  _  __
 # | |/ /___ ___ _ __  ___ _ _ ®
 # | ' </ -_) -_) '_ \/ -_) '_|
 # |_|\_\___\___| .__/\___|_|
-#              |_|            
+#              |_|
 #
-# Keeper Commander 
+# Keeper Commander
 # Copyright 2017 Keeper Security Inc.
 # Contact: ops@keepersecurity.com
 #
@@ -13,10 +13,10 @@ class Team:
     """Defines a Keeper Team """
 
     def __init__(self, team_uid='', restrict_edit=False, restrict_view=False, name=''):
-        self.team_uid = team_uid 
-        self.restrict_edit = restrict_edit 
-        self.restrict_view = restrict_view 
-        self.name = name 
+        self.team_uid = team_uid
+        self.restrict_edit = restrict_edit
+        self.restrict_view = restrict_view
+        self.name = name
 
     def load(self,team):
         self.restrict_edit = team['restrict_edit']
@@ -24,7 +24,7 @@ class Team:
         self.name = team['name']
 
     def display(self):
-        print('') 
+        print('')
         print('{0:>20s}: {1:<20s}'.format('Team UID',self.team_uid))
         print('{0:>20s}: {1}'.format('Name',self.name))
         print('{0:>20s}: {1}'.format('Restrict Edit',self.restrict_edit))
