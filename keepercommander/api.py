@@ -1,10 +1,10 @@
-#  _  __  
+#  _  __
 # | |/ /___ ___ _ __  ___ _ _ ®
 # | ' </ -_) -_) '_ \/ -_) '_|
 # |_|\_\___\___| .__/\___|_|
-#              |_|            
+#              |_|
 #
-# Keeper Commander 
+# Keeper Commander
 # Copyright 2017 Keeper Security Inc.
 # Contact: ops@keepersecurity.com
 #
@@ -34,7 +34,7 @@ from Cryptodome.Cipher import AES, PKCS1_v1_5
 CLIENT_VERSION = 'c10.1.0'
 current_milli_time = lambda: int(round(time.time() * 1000))
 
-# PKCS7 padding helpers 
+# PKCS7 padding helpers
 BS = 16
 pad_binary = lambda s: s + ((BS - len(s) % BS) * chr(BS - len(s) % BS)).encode()
 unpad_binary = lambda s : s[0:-s[-1]]
@@ -42,15 +42,15 @@ unpad_char = lambda s : s[0:-ord(s[-1])]
 
 def login(params):
     """Login to the server and get session token"""
-    
+
     if not params.auth_verifier:
         if params.debug:
             print('No auth verifier, sending pre-auth request')
 
         payload = {
-               'command':'login', 
+               'command':'login',
                'include':['keys'],
-               'version':2, 
+               'version':2,
                'client_version':CLIENT_VERSION,
                'username':params.user
               }
@@ -80,13 +80,13 @@ def login(params):
         # server doesn't include == at the end, but the module expects it
         params.salt = base64.urlsafe_b64decode(r.json()['salt']+'==')
         params.iterations = r.json()['iterations']
-    
+
         prf = lambda p,s: HMAC.new(p,s,SHA256).digest()
         tmp_auth_verifier = base64.urlsafe_b64encode(
-            PBKDF2(params.password, params.salt, 
+            PBKDF2(params.password, params.salt,
                 32, params.iterations, prf))
 
-        # converts bytestream (b') to string 
+        # converts bytestream (b') to string
         params.auth_verifier = tmp_auth_verifier.decode().rstrip('=')
 
         if params.debug:
@@ -98,13 +98,13 @@ def login(params):
 
         if params.mfa_token:
             payload = {
-                   'command':'login', 
+                   'command':'login',
                    'include':['keys'],
-                   'version':2, 
+                   'version':2,
                    'auth_response':params.auth_verifier,
                    'client_version':CLIENT_VERSION,
                    '2fa_token':params.mfa_token,
-                   '2fa_type':params.mfa_type, 
+                   '2fa_type':params.mfa_type,
                    'username':params.user
                   }
             if (params.mfa_type == 'one_time'):
@@ -117,9 +117,9 @@ def login(params):
 
         else:
             payload = {
-                   'command':'login', 
+                   'command':'login',
                    'include':['keys'],
-                   'version':2, 
+                   'version':2,
                    'auth_response':params.auth_verifier,
                    'client_version':CLIENT_VERSION,
                    'username':params.user
@@ -136,7 +136,7 @@ def login(params):
             debug_response(params, payload, r)
 
         if (
-            response_json['result_code'] == 'auth_success' and 
+            response_json['result_code'] == 'auth_success' and
             response_json['result'] == 'success'
             ):
             if params.debug: print('Auth Success')
@@ -147,7 +147,7 @@ def login(params):
             if 'device_token' in response_json:
                 params.mfa_token = response_json['device_token']
                 params.config['mfa_type'] = 'device_token'
-                params.config['mfa_token'] = params.mfa_token 
+                params.config['mfa_token'] = params.mfa_token
                 if params.debug: print('params.mfa_token=' + params.mfa_token)
 
                 # save token to config file if the file exists
@@ -156,7 +156,7 @@ def login(params):
                         json.dump(params.config, f, ensure_ascii=False)
                         print('Updated mfa_token in ' + params.config_filename)
                 except:
-                    if params.debug: print('Unable to update mfa_token') 
+                    if params.debug: print('Unable to update mfa_token')
 
             if params.mfa_token:
                 params.mfa_type = 'device_token'
@@ -189,7 +189,7 @@ def login(params):
                response_json['result_code'] == 'invalid_device_token' or
                response_json['result_code'] == 'invalid_totp'):
             try:
-                params.mfa_token = '' 
+                params.mfa_token = ''
                 params.mfa_type = 'one_time'
 
                 while not params.mfa_token:
@@ -201,8 +201,8 @@ def login(params):
                         raise
 
             except (EOFError, KeyboardInterrupt, SystemExit):
-                return 
-                
+                return
+
         elif response_json['result_code'] == 'auth_failed':
             raise AuthenticationError('Authentication failed.')
 
@@ -332,25 +332,25 @@ def sync_down(params):
                ],
                'revision':params.revision,
                'client_time':current_milli_time(),
-               'device_id':'Commander', 
-               'device_name':'Commander', 
-               'command':'sync_down', 
-               'protocol_version':1, 
+               'device_id':'Commander',
+               'device_name':'Commander',
+               'command':'sync_down',
+               'protocol_version':1,
                'client_version':CLIENT_VERSION,
                '2fa_token':params.mfa_token,
-               '2fa_type':params.mfa_type, 
-               'session_token':params.session_token, 
+               '2fa_type':params.mfa_type,
+               'session_token':params.session_token,
                'username':params.user
         }
-        
+
     if not params.session_token:
         try:
             login(params)
         except:
             raise
-            
+
     payload = make_json(params)
-    
+
     try:
         r = requests.post(params.server, json=payload)
     except:
@@ -385,8 +385,8 @@ def sync_down(params):
         if 'full_sync' in response_json:
             if response_json['full_sync']:
                 if params.debug: print('Full Sync response')
-                params.record_cache = {}  
-                params.meta_data_cache = {}  
+                params.record_cache = {}
+                params.meta_data_cache = {}
                 params.shared_folder_cache = {}
                 params.team_cache = {}
                 params.non_shared_data_cache = {}
@@ -469,14 +469,14 @@ def sync_down(params):
 
                     # store as b64 encoded string
                     # note: decode() converts bytestream (b') to string
-                    # note2: remove == from the end 
+                    # note2: remove == from the end
                     meta_data['record_key'] = \
                         (base64.urlsafe_b64encode(
                             type1key).decode()).rstrip('=')
                     meta_data['record_key_type'] = 1
 
                     # temporary flag for decryption routine below
-                    meta_data['old_record_flag'] = True 
+                    meta_data['old_record_flag'] = True
 
                 if meta_data['record_key_type'] == 2:
                     if params.debug: print('Converting RSA-encrypted key')
@@ -486,9 +486,9 @@ def sync_down(params):
                     if len(unencrypted_key) != 32:
                         raise CryptoError('Invalid record key length')
 
-                    if params.debug: 
-                        print('Before: ' + str(meta_data['record_key'])) 
-                        print('After: ' + str(unencrypted_key)) 
+                    if params.debug:
+                        print('Before: ' + str(meta_data['record_key']))
+                        print('After: ' + str(unencrypted_key))
 
                     # re-encrypt as type1 key with user's data key
                     iv = os.urandom(16)
@@ -497,16 +497,16 @@ def sync_down(params):
 
                     # store as b64 encoded string
                     # note: decode() converts bytestream (b') to string
-                    # note2: remove == from the end 
+                    # note2: remove == from the end
                     meta_data['record_key'] = \
                         (base64.urlsafe_b64encode(
                             type1key).decode()).rstrip('=')
-                    meta_data['record_key_type'] = 1 
-                    meta_data['is_converted_record_type'] = True 
+                    meta_data['record_key_type'] = 1
+                    meta_data['is_converted_record_type'] = True
 
-                    if params.debug: 
-                        print('encrypted record key: ' + str(type1key)) 
-                        print('base64: ' + str(meta_data['record_key'])) 
+                    if params.debug:
+                        print('encrypted record key: ' + str(type1key))
+                        print('base64: ' + str(meta_data['record_key']))
 
                 # add to local cache
                 if params.debug: print('Adding meta data to cache for ' + meta_data['record_uid'])
@@ -583,21 +583,21 @@ def sync_down(params):
 
                 if len(shared_folder['shared_folder_key']) != 32:
                     raise CryptoError('Invalid folder key length')
-                    
+
                 # decrypt the folder name
                 shared_folder['name'] = decrypt_data(shared_folder['name'], shared_folder['shared_folder_key']).decode('utf-8')
                 if params.debug: print('Folder name: ' + str(shared_folder['name']))
 
                 process_changes = False
                 if shared_folder['shared_folder_uid'] in params.shared_folder_cache:
-                    if params.debug: print('Shared folder exists in local cache') 
+                    if params.debug: print('Shared folder exists in local cache')
 
                     if 'full_sync' in shared_folder:
                         if shared_folder['full_sync'] == False:
-                            if params.debug: print('Process individual changes') 
+                            if params.debug: print('Process individual changes')
                             process_changes = True
                     else:
-                        if params.debug: print('No full sync specified, so process individual changes') 
+                        if params.debug: print('No full sync specified, so process individual changes')
                         process_changes = True
 
                 if process_changes:
@@ -638,8 +638,8 @@ def sync_down(params):
 
                     existing_sf['name'] = shared_folder['name']
 
-                else: 
-                    if params.debug: print('Shared folder does not exist in local cache') 
+                else:
+                    if params.debug: print('Shared folder does not exist in local cache')
                     params.shared_folder_cache[shared_folder['shared_folder_uid']] = shared_folder
 
         # decrypt record keys
@@ -648,13 +648,13 @@ def sync_down(params):
             for record in response_json['records']:
                 record_uid = record['record_uid']
 
-                if params.debug: 
+                if params.debug:
                     print('Looking for record key on ' + str(record_uid))
 
                 if record_uid in params.meta_data_cache:
                     # merge meta data into record
                     record.update(params.meta_data_cache[record_uid])
-                   
+
                 unencrypted_key = ''
                 if 'record_key' in record:
                     # decrypt record key with my data key
@@ -662,7 +662,7 @@ def sync_down(params):
                     unencrypted_key = decrypt_data(record['record_key'], params.data_key)[:32]
                     if params.debug:
                         print('...unencrypted_key=' + str(unencrypted_key))
-                else: 
+                else:
                     # If record has no record_key, look in a shared folder
                     for shared_folder_uid in params.shared_folder_cache:
                         shared_folder = params.shared_folder_cache[shared_folder_uid]
@@ -683,7 +683,7 @@ def sync_down(params):
                 else:
                     raise CryptoError('No record key found')
 
-                if params.debug: 
+                if params.debug:
                     print('Got record key: ' + str(unencrypted_key))
 
                 ''' Decrypt the record data and extra... '''
@@ -701,23 +701,23 @@ def sync_down(params):
                     record['data'] = decrypt_data(record['data'], record['record_key_unencrypted'])
                 else:
                     if params.debug: print('No data')
-                    record['data'] = b'{}' 
-    
+                    record['data'] = b'{}'
+
                 if 'extra' in record:
                     if params.debug: print('Got extra')
                     record['extra'] = decrypt_data(record['extra'], record['record_key_unencrypted'])
                 else:
                     if params.debug: print('No extra')
-                    record['extra'] = b'{}' 
+                    record['extra'] = b'{}'
 
                 # Store the record in the cache
-                if params.debug: 
+                if params.debug:
                     print('record is dict: ' + str(isinstance(record, dict)))
                     print('params.record_cache is dict: ' + \
                         str(isinstance(params.record_cache, dict)))
                     print('record is ' + str(record))
 
-                params.record_cache[record_uid] = record 
+                params.record_cache[record_uid] = record
 
 
         if 'pending_shares_from' in response_json:
@@ -744,7 +744,7 @@ def sync_down(params):
         if response_json['result_code'] == 'auth_failed':
             raise CommunicationError('Authentication Failed. ' + \
                 'Check email, password or Two-Factor code.')
-        else:            
+        else:
             raise CommunicationError('Unknown comm problem')
 
 def num_folders_with_record(record_uid):
@@ -760,7 +760,7 @@ def num_folders_with_record(record_uid):
     return counter
 
 def decrypt_data_key(params):
-    """ Decrypt the data key returned by the server 
+    """ Decrypt the data key returned by the server
     Format:
     1 byte: Version number (currently only 1)
     3 bytes: Iterations, unsigned integer, big endian
@@ -768,10 +768,10 @@ def decrypt_data_key(params):
     80 bytes: encrypted data key (broken down further below)
     16 bytes: IV
     64 bytes: ciphertextIn
-    Key for encrypting the data key: 
+    Key for encrypting the data key:
         PBKDF2_with_HMAC_SHA256(iterations, salt, master password, 256-bit)
     Encryption method: 256-bit AES, CBC mode, no padding
-    Verification: the decrypted ciphertext should contain two 32 byte values, 
+    Verification: the decrypted ciphertext should contain two 32 byte values,
         identical to each other.
     """
     if not params.encryption_params:
@@ -783,9 +783,9 @@ def decrypt_data_key(params):
     if len(decoded_encryption_params) != 100:
         raise CryptoError('Invalid encryption params: bad params length')
 
-    version = int.from_bytes(decoded_encryption_params[0:1], 
+    version = int.from_bytes(decoded_encryption_params[0:1],
                               byteorder='big', signed=False)
-    iterations = int.from_bytes(decoded_encryption_params[1:4], 
+    iterations = int.from_bytes(decoded_encryption_params[1:4],
                                  byteorder='big', signed=False)
     salt = decoded_encryption_params[4:20]
     encrypted_data_key = decoded_encryption_params[20:100]
@@ -812,7 +812,7 @@ def decrypt_data_key(params):
 
     if params.debug: print('Decrypted data key with success.')
 
-    # save the encryption params 
+    # save the encryption params
     params.data_key = decrypted_data_key[:32]
 
 def decrypt_private_key(params):
@@ -911,7 +911,7 @@ def check_edit_permission(params, record_uid):
         print('You do not have permissions to edit this record.')
         return False
 
-def get_record(params,record_uid):    
+def get_record(params,record_uid):
     """Return the referenced record cache"""
     record_uid = record_uid.strip()
 
@@ -933,7 +933,7 @@ def get_record(params,record_uid):
     rec = Record()
 
     try:
-        data = json.loads(cached_rec['data'].decode('utf-8')) 
+        data = json.loads(cached_rec['data'].decode('utf-8'))
         rec = Record(record_uid)
         rec.load(data,cached_rec['revision'])
     except:
@@ -967,7 +967,7 @@ def is_team(params,team_uid):
     if not team_uid in params.team_cache:
         return False
 
-    return True 
+    return True
 
 
 def get_shared_folder(params,shared_folder_uid):
@@ -1044,7 +1044,7 @@ def get_user_key(params, username):
     if returned_key == b'':
         print('Error: unable to locate public key for ' + username)
     else:
-        if params.debug: 
+        if params.debug:
             print('Retrieved public key for user: ' + str(returned_key))
 
     returned_key = returned_key.rstrip('=')
@@ -1054,12 +1054,12 @@ def get_user_key(params, username):
 
 
 def get_encrypted_sf_key_from_team(params, team_uid, shared_folder_key):
-    ''' Return an encrypted shared folder key based on a team UID ''' 
+    ''' Return an encrypted shared folder key based on a team UID '''
 
     if params.debug: print('Getting key object for Team UID=' + team_uid)
-    
+
     request = make_request(params, 'team_get_keys')
-    team_uids = [] 
+    team_uids = []
     team_uids.append(team_uid)
     request['teams'] = team_uids
     response_json = communicate(params, request)
@@ -1073,7 +1073,7 @@ def get_encrypted_sf_key_from_team(params, team_uid, shared_folder_key):
             if key['result_code'] == 'doesnt_exist':
                 if 'team_uid' in key:
                     print('Error: team UID ' + key['team_uid'] + 'does not exist')
-                    break 
+                    break
 
         if 'key' in key:
             if key['team_uid'] == team_uid:
@@ -1109,11 +1109,11 @@ def get_encrypted_sf_key_from_team(params, team_uid, shared_folder_key):
                     if params.debug: print('Invalid key type')
 
     if params.debug: print('Encrypted shared folder key: ' + str(encrypted_sf_key))
-    return encrypted_sf_key 
+    return encrypted_sf_key
 
 
 def search_records(params, searchstring):
-    """Search for string in record contents 
+    """Search for string in record contents
        and return array of Record objects """
 
     if not params.record_cache:
@@ -1129,7 +1129,7 @@ def search_records(params, searchstring):
         target = rec.to_lowerstring()
         if p.search(target):
             search_results.append(rec)
-            
+
     return search_results
 
 def search_shared_folders(params, searchstring):
@@ -1142,7 +1142,7 @@ def search_shared_folders(params, searchstring):
     if searchstring != '': print('Searching for ' + searchstring)
     p = re.compile(searchstring.lower())
 
-    search_results = [] 
+    search_results = []
 
     for shared_folder_uid in params.shared_folder_cache:
 
@@ -1157,7 +1157,7 @@ def search_shared_folders(params, searchstring):
         if p.search(target):
             if params.debug: print('Search success')
             search_results.append(sf)
-     
+
     return search_results
 
 def search_teams(params, searchstring):
@@ -1170,7 +1170,7 @@ def search_teams(params, searchstring):
     if searchstring != '': print('Searching for ' + searchstring)
     p = re.compile(searchstring.lower())
 
-    search_results = [] 
+    search_results = []
 
     for team_uid in params.team_cache:
 
@@ -1185,7 +1185,7 @@ def search_teams(params, searchstring):
         if p.search(target):
             if params.debug: print('Search success')
             search_results.append(team)
-     
+
     return search_results
 
 def prepare_record(params, record, shared_folder_uid=''):
@@ -1261,7 +1261,7 @@ def prepare_record(params, record, shared_folder_uid=''):
     if params.debug: print('encoded_extra: ' + str(encoded_extra))
 
     modified_time = int(round(time.time()))
-    modified_time_milli = modified_time * 1000 
+    modified_time_milli = modified_time * 1000
 
     # build a record dict for upload
     new_record = {}
@@ -1275,7 +1275,7 @@ def prepare_record(params, record, shared_folder_uid=''):
 
     shared_folder_uids = shared_folders_containing_record(params, record.record_uid)
     if( len(shared_folder_uids) > 0 ):
-        new_record['shared_folder_uid'] = shared_folder_uids[0] 
+        new_record['shared_folder_uid'] = shared_folder_uids[0]
 
     if record.record_uid in params.record_cache:
         if 'revision' in params.record_cache[record.record_uid]:
@@ -1312,17 +1312,17 @@ def prepare_shared_folder(params, shared_folder):
 
     # build a shared folder dict for upload
     new_sf = {}
-    new_sf['name'] = shared_folder.name 
-    new_sf['shared_folder_uid'] = shared_folder.shared_folder_uid 
-    new_sf['operation'] = 'add' 
-    new_sf['revision'] = 0 
-    new_sf['default_can_edit'] = shared_folder.default_can_edit 
-    new_sf['default_can_share'] = shared_folder.default_can_share 
-    new_sf['default_manage_records'] = shared_folder.default_manage_records 
-    new_sf['default_manage_users'] = shared_folder.default_manage_users 
-    new_sf['add_records'] = shared_folder.records 
-    new_sf['add_teams'] = shared_folder.teams 
-    new_sf['add_users'] = shared_folder.users 
+    new_sf['name'] = shared_folder.name
+    new_sf['shared_folder_uid'] = shared_folder.shared_folder_uid
+    new_sf['operation'] = 'add'
+    new_sf['revision'] = 0
+    new_sf['default_can_edit'] = shared_folder.default_can_edit
+    new_sf['default_can_share'] = shared_folder.default_can_share
+    new_sf['default_manage_records'] = shared_folder.default_manage_records
+    new_sf['default_manage_users'] = shared_folder.default_manage_users
+    new_sf['add_records'] = shared_folder.records
+    new_sf['add_teams'] = shared_folder.teams
+    new_sf['add_users'] = shared_folder.users
 
     if needs_sf_key:
         shared_folder_key = os.urandom(32)
@@ -1332,7 +1332,7 @@ def prepare_shared_folder(params, shared_folder):
                 params.shared_folder_cache[shared_folder.shared_folder_uid]['shared_folder_key']
 
     for t in new_sf['add_teams']:
-        # encrypt shared folder key with team public key  
+        # encrypt shared folder key with team public key
         if params.debug: print('Getting encrypted SF key for Team UID=' + str(t['team_uid']))
         encrypted_sf_key = get_encrypted_sf_key_from_team(params, t['team_uid'], shared_folder_key)
         t['shared_folder_key'] = base64.urlsafe_b64encode(encrypted_sf_key).decode().rstrip('=')
@@ -1353,7 +1353,7 @@ def prepare_shared_folder(params, shared_folder):
             rsa_key = RSA.importKey(base64.urlsafe_b64decode(public_key))
             cipher = PKCS1_v1_5.new(rsa_key)
             encrypted_sf_key = cipher.encrypt(shared_folder_key+h.digest())
-        u['shared_folder_key'] = base64.urlsafe_b64encode(encrypted_sf_key).decode().rstrip('=') 
+        u['shared_folder_key'] = base64.urlsafe_b64encode(encrypted_sf_key).decode().rstrip('=')
         if params.debug: print('Encrypted shared folder key from user=' + str(u['shared_folder_key']))
 
     for r in new_sf['add_records']:
@@ -1364,7 +1364,7 @@ def prepare_shared_folder(params, shared_folder):
 
         if record_uid in params.record_cache:
             if params.debug: print('Found record in cache: ' + str(params.record_cache[record_uid]))
-            record_key = params.record_cache[record_uid]['record_key_unencrypted'] 
+            record_key = params.record_cache[record_uid]['record_key_unencrypted']
             type1key = iv + cipher.encrypt(pad_binary(record_key))
             encoded_type1key = (base64.urlsafe_b64encode(
                                    type1key).decode()).rstrip('=')
@@ -1382,7 +1382,7 @@ def prepare_shared_folder(params, shared_folder):
     encrypted_name = iv + cipher.encrypt(pad_binary(shared_folder.name.encode()))
 
     if params.debug: print('encrypted shared folder name: ' + str(encrypted_name))
-    new_sf['name'] = base64.urlsafe_b64encode(encrypted_name).decode().rstrip('=') 
+    new_sf['name'] = base64.urlsafe_b64encode(encrypted_name).decode().rstrip('=')
 
     return new_sf
 
@@ -1453,7 +1453,7 @@ def communicate(params, request):
     return response_json
 
 def update_record(params, record):
-    """ Push a record update to the cloud. 
+    """ Push a record update to the cloud.
         Takes a Record() object, converts to record JSON
         and pushes to the Keeper cloud API
     """
@@ -1535,7 +1535,7 @@ def add_record(params, record):
         return True
 
 def delete_record(params, record_uid):
-    """ Delete a record """  
+    """ Delete a record """
     request = make_request(params, 'record_update')
     delete_records = []
     delete_records.append(record_uid)
@@ -1558,7 +1558,7 @@ def debug_response(params, payload, response):
     print('<<< Response Headers:[' + str(response.headers) + ']')
     if response.text:
         print('<<< Response content:[' + str(response.text) + ']')
-    print('<<< Response content:[' + json.dumps(response.json(), 
+    print('<<< Response content:[' + json.dumps(response.json(),
         sort_keys=True, indent=4) + ']')
     if params.session_token:
         print('<<< Session Token:['+str(params.session_token)+']')
