@@ -785,8 +785,6 @@ def decrypt_data_key(params):
     if len(decoded_encryption_params) != 100:
         raise CryptoError('Invalid encryption params: bad params length')
 
-    version = int.from_bytes(decoded_encryption_params[0:1],
-                             byteorder='big', signed=False)
     iterations = int.from_bytes(decoded_encryption_params[1:4],
                                 byteorder='big', signed=False)
     salt = decoded_encryption_params[4:20]
@@ -883,30 +881,19 @@ def check_edit_permission(params, record_uid):
     """Check record and shared folders for edit permission"""
     cached_rec = params.record_cache[record_uid]
 
-    if 'data' in cached_rec:
-        data = json.loads(cached_rec['data'].decode('utf-8'))
-    else: data = {}
-
-    if 'extra' in cached_rec:
-        extra = json.loads(cached_rec['extra'].decode('utf-8'))
-    else: extra = {}
-
     can_edit = False
     if 'can_edit' in cached_rec:
         if params.debug: print('Edit permissions found in record')
         can_edit = True
 
-    found_shared_folder_uid = ''
     if can_edit is False:
         for shared_folder_uid in params.shared_folder_cache:
             shared_folder = params.shared_folder_cache[shared_folder_uid]
-            sf_key = shared_folder['shared_folder_key']
             if 'records' in shared_folder:
                 sf_records = shared_folder['records']
                 for sf_record in sf_records:
                     if 'record_uid' in sf_record:
                         if sf_record['record_uid'] == record_uid:
-                            found_shared_folder_uid = shared_folder_uid
                             if 'can_edit' in sf_record:
                                 can_edit = True
                                 if params.debug:
