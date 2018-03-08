@@ -77,18 +77,12 @@ class SharedFolder:
         return self.to_string().lower()
 
     def to_dictionary(self):
-        records = []
         teams = []
-        record_uids = []
         team_uids = []
 
-        for r in self.records:
-            records.append(r['title'])
-            record_uids.append(r['record_uid'])
-
-        for r in self.teams:
-            teams.append(r['name'])
-            team_uids.append(r['uid'])
+        for t in self.teams:
+            teams.append(t['name'])
+            team_uids.append(t['team_uid'])
 
         return {
             'uid': self.shared_folder_uid,
@@ -98,8 +92,7 @@ class SharedFolder:
             'default_can_edit': self.default_can_edit,
             'default_can_share': self.default_can_share,
             'users': [u['username'] for u in self.users],
-            'records': records,
-            'record_uids': record_uids,
+            'record_uids': [r['record_uid'] for r in self.records],
             'teams': teams,
             'team_uids': team_uids,
         }
