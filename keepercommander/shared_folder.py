@@ -1,10 +1,10 @@
-#  _  __  
+#  _  __
 # | |/ /___ ___ _ __  ___ _ _ ®
 # | ' </ -_) -_) '_ \/ -_) '_|
 # |_|\_\___\___| .__/\___|_|
-#              |_|            
+#              |_|
 #
-# Keeper Commander 
+# Keeper Commander
 # Copyright 2017 Keeper Security Inc.
 # Contact: ops@keepersecurity.com
 #
@@ -15,16 +15,16 @@ class SharedFolder:
     def __init__(self,shared_folder_uid='',revision='',default_manage_records=False,
                  default_manage_users=False,default_can_edit=False,default_can_share=False,
                  name='',records=[],users=[],teams=[]):
-        self.shared_folder_uid = shared_folder_uid 
+        self.shared_folder_uid = shared_folder_uid
         self.revision = revision
-        self.default_manage_records = default_manage_records 
-        self.default_manage_users = default_manage_users 
-        self.default_can_edit = default_can_edit 
-        self.default_can_share = default_can_share 
-        self.name = name 
-        self.records = records 
-        self.users = users 
-        self.teams = teams 
+        self.default_manage_records = default_manage_records
+        self.default_manage_users = default_manage_users
+        self.default_can_edit = default_can_edit
+        self.default_can_share = default_can_share
+        self.name = name
+        self.records = records
+        self.users = users
+        self.teams = teams
 
     def load(self,sf,revision=''):
         self.default_manage_records = sf['default_manage_records']
@@ -32,26 +32,13 @@ class SharedFolder:
         self.default_can_edit = sf['default_can_edit']
         self.default_can_share = sf['default_can_share']
         self.name = sf['name']
-
-        if 'records' in sf:
-            self.records = sf['records']
-        else:
-            self.records = []
-
-        if 'users' in sf:
-            self.users = sf['users']
-        else:
-            self.users = []
-
-        if 'teams' in sf:
-            self.teams = sf['teams']
-        else:
-            self.teams = []
-
+        self.records = sf['records'] if 'records' in sf else []
+        self.users = sf['users'] if 'users' in sf else []
+        self.teams = sf['teams'] if 'teams' in sf else []
         self.revision = revision
 
     def display(self):
-        print('') 
+        print('')
         print('{0:>20s}: {1:<20s}'.format('Shared Folder UID',self.shared_folder_uid))
         print('{0:>20s}: {1}'.format('Revision',self.revision))
         print('{0:>20s}: {1}'.format('Name',self.name))
