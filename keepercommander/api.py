@@ -1202,6 +1202,67 @@ def search_teams(params, searchstring):
     return search_results
 
 
+def regex_search(params, keeper_type, match_all=False, **kwargs):
+    """Search local cache for objects of keeper_type with **kwarg attributes.
+
+    keeper_type must be 'record', 'shared_folder', or 'team'.
+
+    If match_all is True, returned results will match all values (AND).  If False,
+    they will match any value (OR).
+
+    Raises a ValueError if keeper_type is invalid, or a KeyError if a keyword
+    argument is not valid for the type of record searched."""
+
+    search_results = []
+    regexes = {}
+
+    for key, value in kwargs.items():
+        regexes[key] = re.compile(value)
+
+    search_base = []
+    if keeper_type == 'record':
+        if not params.record_cache:
+            print('No record cache.  Sync down first.')
+            return
+        for uid in params.record_cache:
+            r = get_record(params, uid)
+            search_base.append(r.to_dictionary())
+    elif keeper_type == 'shared_folder':
+        if not params.shared_folder_cache:
+            print('No shared folder cache.  Sync down first.')
+            return
+
+        for shared_folder_uid in params.shared_folder_cache:
+            sf = get_shared_folder(params, shared_folder_uid)
+            search_base.append(sf.to_dictionary())
+
+    elif keeper_type == 'team':
+        if not params.team_cache:
+            print('No team cache.  Sync down first.')
+            return
+
+        for team_uid in params.team_cache:
+            t = get_team(params, team_uid)
+            search_base.append(t.to_dictionary())
+
+    else:
+        raise ValueError('keeper_type must be "record", "shared_folder", or "team"')
+
+    for s in search_base:
+        matched = 0
+        for attribute_name, regex in regexes.items():
+            if regex.search(s[attribute_name]):
+                if match_all:
+                    matched += 1
+                else:
+                    search_results.append(s)
+                    break
+        if match_all and matched == len(regexes):
+            search_results.append(s)
+
+    return search_results
+
+
 def prepare_record(params, record, shared_folder_uid=''):
     """ Prepares the Record() object to be sent to the Keeper Cloud API
         by serializing and encrypting it in the proper JSON format used for
