@@ -38,3 +38,10 @@ class Team:
     def to_lowerstring(self):
         return self.to_string().lower()
 
+    def to_dictionary(self):
+        return {
+            'uid': self.team_uid,
+            'restrict_edit': self.restrict_edit,
+            'restrict_view': self.restrict_view,
+            'name': self.name,
+        }
