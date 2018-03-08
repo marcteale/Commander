@@ -18,7 +18,6 @@ import getpass
 import time
 import os
 from keepercommander import generator
-import datetime
 from keepercommander import plugin_manager, params
 from keepercommander.record import Record
 from keepercommander.shared_folder import SharedFolder
@@ -1567,3 +1566,5 @@ def generate_record_uid():
     """ Generate url safe base 64 16 byte uid """
     return base64.urlsafe_b64encode(
         os.urandom(16)).decode().rstrip('=')
+
+
