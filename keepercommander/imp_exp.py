@@ -1,10 +1,10 @@
-#  _  __  
+#  _  __
 # | |/ /___ ___ _ __  ___ _ _ ®
 # | ' </ -_) -_) '_ \/ -_) '_|
 # |_|\_\___\___| .__/\___|_|
-#              |_|            
+#              |_|
 #
-# Keeper Commander 
+# Keeper Commander
 # Copyright 2017 Keeper Security Inc.
 # Contact: ops@keepersecurity.com
 #
