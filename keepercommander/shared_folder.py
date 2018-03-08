@@ -75,3 +75,31 @@ class SharedFolder:
 
     def to_lowerstring(self):
         return self.to_string().lower()
+
+    def to_dictionary(self):
+        records = []
+        teams = []
+        record_uids = []
+        team_uids = []
+
+        for r in self.records:
+            records.append(r['title'])
+            record_uids.append(r['record_uid'])
+
+        for r in self.teams:
+            teams.append(r['name'])
+            team_uids.append(r['uid'])
+
+        return {
+            'uid': self.shared_folder_uid,
+            'name': self.name,
+            'default_manage_records': self.default_manage_records,
+            'default_manage_users': self.default_manage_users,
+            'default_can_edit': self.default_can_edit,
+            'default_can_share': self.default_can_share,
+            'users': [u['username'] for u in self.users],
+            'records': records,
+            'record_uids': record_uids,
+            'teams': teams,
+            'team_uids': team_uids,
+        }
